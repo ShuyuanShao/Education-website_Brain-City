@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import svgPaths from "./svg-e7qsg400mz";
+import promptActionToolMode from "../../assets/prompt-action-toolMode.svg";
+import promptActionCursorMode from "../../assets/prompt-action-cursorMode.svg";
 
 export { svgPaths };
 
@@ -198,7 +200,7 @@ function getStrokeColorFromFill(fillColor: string): string {
   return hslToHex((hsl.h + 12) % 360, hsl.s, Math.min(hsl.l + 20, 100));
 }
 
-function Background({ isBlurActive = false }: { isBlurActive?: boolean }) {
+export function Background({ isBlurActive = false, showVector1 = true }: { isBlurActive?: boolean; showVector1?: boolean }) {
   return (
     <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1332.462px] left-[calc(50%+191.17px)] top-[calc(50%+123.23px)] w-[1460.344px]" data-name="background">
       <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 1460.34 1332.46">
@@ -215,37 +217,43 @@ function Background({ isBlurActive = false }: { isBlurActive?: boolean }) {
           <g style={{ transformOrigin: "730px 666px", animation: "bg-pulse 8s ease-in-out infinite" }}>
             <path d={svgPaths.p25a7a680} fill="var(--fill-0, white)" fillOpacity="0.5" id="Vector 134" />
           </g>
-          <g filter="url(#filter-default-2)" opacity={isBlurActive ? 0 : 1} style={{ transition: "opacity 0.8s ease-out" }}>
-            <path d={svgPaths.p2976d580} fill="var(--fill-0, #E2E2E2)" />
-            <path d={svgPaths.p2976d580} stroke="var(--stroke-0, #252525)" strokeWidth="2" />
-          </g>
-          <g filter="url(#filter-click-0.1)" opacity={isBlurActive ? 0.8 : 0} style={{ transition: "opacity 0.8s ease-out" }}>
-            <path d={svgPaths.p2976d580} fill="var(--fill-0, #E2E2E2)" />
-            <path d={svgPaths.p2976d580} stroke="var(--stroke-0, #252525)" strokeWidth="2" />
-          </g>
+          {showVector1 && (
+            <>
+              <g filter="url(#filter-default-2)" opacity={isBlurActive ? 0 : 1} style={{ transition: "opacity 0.8s ease-out" }}>
+                <path d={svgPaths.p2976d580} fill="var(--fill-0, #E2E2E2)" />
+                <path d={svgPaths.p2976d580} stroke="var(--stroke-0, #252525)" strokeWidth="2" />
+              </g>
+              <g filter="url(#filter-click-0.1)" opacity={isBlurActive ? 0.8 : 0} style={{ transition: "opacity 0.8s ease-out" }}>
+                <path d={svgPaths.p2976d580} fill="var(--fill-0, #E2E2E2)" />
+                <path d={svgPaths.p2976d580} stroke="var(--stroke-0, #252525)" strokeWidth="2" />
+              </g>
+            </>
+          )}
         </g>
-        <defs>
-          <filter colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" height="1193" id="filter-default-2" width="1271" x="111" y="63">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
-            <feOffset />
-            <feGaussianBlur stdDeviation="25" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0" />
-            <feBlend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_1_439" />
-            <feBlend in="SourceGraphic" in2="effect1_dropShadow_1_439" mode="normal" result="shape" />
-          </filter>
-          <filter colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" height="1193" id="filter-click-0.1" width="1271" x="111" y="63">
-            <feFlood floodOpacity="0" result="BackgroundImageFix" />
-            <feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
-            <feOffset />
-            <feGaussianBlur stdDeviation="10" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0" />
-            <feBlend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_1_439" />
-            <feBlend in="SourceGraphic" in2="effect1_dropShadow_1_439" mode="normal" result="shape" />
-          </filter>
-        </defs>
+        {showVector1 && (
+          <defs>
+            <filter colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" height="1193" id="filter-default-2" width="1271" x="111" y="63">
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
+              <feOffset />
+              <feGaussianBlur stdDeviation="25" />
+              <feComposite in2="hardAlpha" operator="out" />
+              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0" />
+              <feBlend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_1_439" />
+              <feBlend in="SourceGraphic" in2="effect1_dropShadow_1_439" mode="normal" result="shape" />
+            </filter>
+            <filter colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" height="1193" id="filter-click-0.1" width="1271" x="111" y="63">
+              <feFlood floodOpacity="0" result="BackgroundImageFix" />
+              <feColorMatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" />
+              <feOffset />
+              <feGaussianBlur stdDeviation="10" />
+              <feComposite in2="hardAlpha" operator="out" />
+              <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0" />
+              <feBlend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_1_439" />
+              <feBlend in="SourceGraphic" in2="effect1_dropShadow_1_439" mode="normal" result="shape" />
+            </filter>
+          </defs>
+        )}
       </svg>
     </div>
   );
@@ -558,15 +566,15 @@ function Toolbar({ onTimerEnd }: { onTimerEnd: () => void }) {
   );
 }
 
-function PromptAction({ onPromptClick }: { onPromptClick: () => void }) {
+function PromptAction({ onPromptClick, mode = "tool" }: { onPromptClick: () => void; mode?: string }) {
+  const src = mode === "tool" ? promptActionToolMode : promptActionCursorMode;
   return (
     <button
       onClick={onPromptClick}
-      className="-translate-y-1/2 absolute bg-[#292929] content-stretch flex h-[242px] items-center justify-center left-[80px] px-[75px] py-[100px] rounded-[12px] top-[calc(50%+299px)] w-[328px] cursor-pointer hover:bg-[#333333] transition-colors"
+      className="-translate-y-1/2 absolute content-stretch flex h-[242px] items-center justify-center left-[80px] rounded-[12px] top-[calc(50%+299px)] w-[328px] cursor-pointer"
       data-name="prompt-action"
     >
-      <div aria-hidden="true" className="absolute border-[1.5px] border-black border-solid inset-0 pointer-events-none rounded-[12px]" />
-      <p className="font-light leading-[1.4] not-italic relative shrink-0 text-[30px] text-white whitespace-nowrap">教具提示动画/静图</p>
+      <img alt="教具提示" className="block max-w-none size-full" src={src} />
     </button>
   );
 }
@@ -974,7 +982,7 @@ export interface BrainSceneState {
   cellColors: Record<string, { fill: string; stroke: string }>;
 }
 
-export default function Unit({ onComplete }: { onComplete?: (data: BrainSceneState) => void }) {
+export default function Unit({ onComplete, mode = "tool" }: { onComplete?: (data: BrainSceneState) => void; mode?: string }) {
   const [selectedAction, setSelectedAction] = useState("piano");
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -1263,7 +1271,7 @@ export default function Unit({ onComplete }: { onComplete?: (data: BrainSceneSta
       {showFeedback && <FeedbackAnimation isAnimating={isAnimating} />}
       <Tooltip isVisible={showTooltip} isAnimating={tooltipAnimating} />
       <Toolbar onTimerEnd={handleTimerEnd} />
-      <PromptAction onPromptClick={handlePromptClick} />
+      <PromptAction onPromptClick={handlePromptClick} mode={mode} />
       <Frame1 selectedAction={selectedAction} />
       <MenuAction selectedAction={selectedAction} onActionClick={setSelectedAction} />
     </div>
