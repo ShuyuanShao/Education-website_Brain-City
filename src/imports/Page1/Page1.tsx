@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "motion/react";
 import svgPaths from "./svg-e7qsg400mz";
 import promptActionToolMode from "../../assets/prompt-action-toolMode.svg";
 import promptActionCursorMode from "../../assets/prompt-action-cursorMode.svg";
+import iconStop from "../../assets/icon-stop.svg";
+import iconClose from "../../assets/icon-close.svg";
+import iconContinue from "../../assets/icon-continue.svg";
 
 export { svgPaths };
 
@@ -488,80 +491,66 @@ function Frame() {
   );
 }
 
-function Timer({ onTimerEnd }: { onTimerEnd: () => void }) {
-  const [timeLeft, setTimeLeft] = useState(60); // 60秒倒计时
+function Timer({ onTimerEnd, paused }: { onTimerEnd: () => void; paused: boolean }) {
+  const [timeLeft, setTimeLeft] = useState(60);
   const onTimerEndRef = useRef(onTimerEnd);
 
-  // 保持 ref 最新
-  useEffect(() => {
-    onTimerEndRef.current = onTimerEnd;
-  }, [onTimerEnd]);
+  useEffect(() => { onTimerEndRef.current = onTimerEnd; }, [onTimerEnd]);
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      onTimerEndRef.current();
+    if (paused || timeLeft <= 0) {
+      if (timeLeft <= 0) onTimerEndRef.current();
       return;
     }
-
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         const newValue = Math.max(prev - 1, 0);
-        if (newValue === 0) {
-          setTimeout(() => onTimerEndRef.current(), 100);
-        }
+        if (newValue === 0) setTimeout(() => onTimerEndRef.current(), 100);
         return newValue;
       });
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, paused]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const timeString = `${String(minutes).padStart(2, '0')}：${String(seconds).padStart(2, '0')}`;
   const isBlinking = timeLeft <= 10 && timeLeft > 0;
 
-  // 开发测试：点击跳转到剩余10秒
-  const handleClick = () => {
-    if (timeLeft > 10) {
-      setTimeLeft(10);
-    }
-  };
-
   return (
     <div
-      className={`bg-white content-stretch flex gap-[12px] items-center px-[20px] py-[12px] relative rounded-[99px] shrink-0 cursor-pointer ${isBlinking ? 'animate-blink-bg' : ''}`}
+      className={`bg-white content-stretch flex gap-[12px] items-center px-[20px] py-[12px] relative rounded-[99px] shrink-0 cursor-pointer ${isBlinking ? 'animate-blink-bg' : ''} ${paused ? 'opacity-50' : ''}`}
       data-name="Timer"
-      onClick={handleClick}
+      onClick={() => { if (timeLeft > 10) setTimeLeft(10); }}
     >
       <div aria-hidden="true" className="absolute border-2 border-black border-solid inset-0 pointer-events-none rounded-[99px]" />
       <Frame />
-      <p className="font-normal leading-[1.4] not-italic relative shrink-0 text-[30px] text-black whitespace-nowrap">
+      <p className="font-normal leading-[1.4] not-italic relative shrink-0 text-[30px] text-black whitespace-nowrap select-none">
         {timeString}
       </p>
     </div>
   );
 }
 
-function Close() {
+function Close({ onStop, onClose, paused }: { onStop?: () => void; onClose?: () => void; paused?: boolean }) {
+  const stopSrc = paused ? iconContinue : iconStop;
   return (
-    <div className="h-[68px] relative shrink-0 w-[67px]" data-name="close">
-      <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 67 68">
-        <g id="close">
-          <rect fill="var(--fill-0, white)" height="66" rx="32.5" width="65" x="1" y="1" />
-          <rect height="66" rx="32.5" stroke="var(--stroke-0, black)" strokeWidth="2" width="65" x="1" y="1" />
-          <path d={svgPaths.p2a89bd00} fill="var(--fill-0, #333333)" id="Union" />
-        </g>
-      </svg>
+    <div className="bg-white border-2 border-black border-solid content-stretch flex flex-col items-center justify-center overflow-clip px-[5px] py-[20px] rounded-[99px] h-[68px] w-[68px] hover:h-[136px] transition-all duration-300 cursor-pointer group" data-name="close-button">
+      <div className="shrink-0 size-[36px] mb-[34px] hidden group-hover:flex" data-name="stop" onClick={(e) => { e.stopPropagation(); onStop?.(); }}>
+        <img alt="" className="block size-full" src={stopSrc} />
+      </div>
+      <div className="shrink-0 size-[27px]" data-name="close" onClick={(e) => { e.stopPropagation(); onClose?.(); }}>
+        <img alt="" className="block size-full" src={iconClose} />
+      </div>
     </div>
   );
 }
 
-function Toolbar({ onTimerEnd }: { onTimerEnd: () => void }) {
+function Toolbar({ onTimerEnd, onStop, onClose, paused }: { onTimerEnd: () => void; onStop?: () => void; onClose?: () => void; paused: boolean }) {
   return (
-    <div className="-translate-y-1/2 absolute content-stretch flex gap-[18px] items-center right-[80px] top-[calc(50%-386px)]" data-name="toolbar">
-      <Timer onTimerEnd={onTimerEnd} />
-      <Close />
+    <div className="-translate-y-1/2 absolute content-stretch flex gap-[18px] items-start h-[68px] right-[80px] top-[calc(50%-386px)]" data-name="toolbar">
+      <Timer onTimerEnd={onTimerEnd} paused={paused} />
+      <Close onStop={onStop} onClose={onClose} paused={paused} />
     </div>
   );
 }
@@ -755,9 +744,18 @@ function ListPath({ selectedAction }: { selectedAction: string }) {
 function Frame1({ selectedAction }: { selectedAction: string }) {
   return (
     <AnimatePresence>
-      <div key={selectedAction} className="-translate-y-1/2 absolute content-stretch flex flex-col gap-[55px] items-start left-[80px] top-[calc(50%-50px)] w-[266px]">
-        <TextAction selectedAction={selectedAction} />
-        <ListPath selectedAction={selectedAction} />
+      <div key={selectedAction || "empty"} className="-translate-y-1/2 absolute content-stretch flex flex-col gap-[55px] items-start left-[80px] top-[calc(50%-50px)] w-[266px] h-[305px]">
+        {selectedAction ? (
+          <>
+            <TextAction selectedAction={selectedAction} />
+            <ListPath selectedAction={selectedAction} />
+          </>
+        ) : (
+          <div className="text-black text-[30px] leading-[1.8] shrink-0 w-max">
+            <p>请选择"本领块"，</p>
+            <p>为大脑塑造神经道路</p>
+          </div>
+        )}
       </div>
     </AnimatePresence>
   );
@@ -982,8 +980,8 @@ export interface BrainSceneState {
   cellColors: Record<string, { fill: string; stroke: string }>;
 }
 
-export default function Unit({ onComplete, mode = "tool" }: { onComplete?: (data: BrainSceneState) => void; mode?: string }) {
-  const [selectedAction, setSelectedAction] = useState("piano");
+export default function Unit({ onComplete, mode = "tool", onClose }: { onComplete?: (data: BrainSceneState) => void; mode?: string; onClose?: () => void }) {
+  const [selectedAction, setSelectedAction] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -1039,6 +1037,7 @@ export default function Unit({ onComplete, mode = "tool" }: { onComplete?: (data
   const [cellColors, setCellColors] = useState<Record<string, { fill: string; stroke: string }>>({});
   const [flashingPaths, setFlashingPaths] = useState<Set<string>>(new Set());
   const [isBlurActive, setIsBlurActive] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   const handlePromptClick = () => {
     // 触发反馈动画
@@ -1270,7 +1269,7 @@ export default function Unit({ onComplete, mode = "tool" }: { onComplete?: (data
       <BrainScene pathWidths={pathWidths} pathColors={pathColors} cellColors={cellColors} flashingPaths={flashingPaths} />
       {showFeedback && <FeedbackAnimation isAnimating={isAnimating} />}
       <Tooltip isVisible={showTooltip} isAnimating={tooltipAnimating} />
-      <Toolbar onTimerEnd={handleTimerEnd} />
+      <Toolbar onTimerEnd={handleTimerEnd} paused={paused} onStop={() => setPaused(p => !p)} onClose={onClose} />
       <PromptAction onPromptClick={handlePromptClick} mode={mode} />
       <Frame1 selectedAction={selectedAction} />
       <MenuAction selectedAction={selectedAction} onActionClick={setSelectedAction} />

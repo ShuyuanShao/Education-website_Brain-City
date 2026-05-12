@@ -14,3 +14,13 @@ body {
   overflow: hidden;
   font-family: "Noto Sans SC", sans-serif;
 }
+
+::selection {
+  background-color: #292929;
+  color: #93E758;
+}
+
+::-moz-selection {
+  background-color: #292929;
+  color: #93E758;
+}

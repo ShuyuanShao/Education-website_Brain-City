@@ -20,13 +20,17 @@ export default function App() {
     setCurrentPage('page2');
   };
 
+  const handleNavigateHome = () => {
+    setCurrentPage('page0');
+  };
+
   if (currentPage === 'page0') {
     return <Page0 onStart={handlePage0Start} />;
   }
 
   if (currentPage === 'page1') {
-    return <Page1 mode={selectedMode} onComplete={handlePage1Complete} />;
+    return <Page1 mode={selectedMode} onComplete={handlePage1Complete} onClose={handleNavigateHome} />;
   }
 
-  return <Page2 brainSceneState={gameData} />;
+  return <Page2 brainSceneState={gameData} onClose={handleNavigateHome} />;
 }

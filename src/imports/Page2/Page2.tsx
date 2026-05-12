@@ -452,7 +452,7 @@ function Frame1() {
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut", delay: 7.5}}
+      transition={{ duration: 0.8, ease: "easeOut", delay: 7}}
       className="bg-white relative w-full">
       <div aria-hidden="true" className="absolute border border-black border-solid inset-[-0.5px] pointer-events-none" />
       <div className="flex flex-row items-center justify-center size-full">
@@ -484,9 +484,9 @@ function Frame6({ brainSceneState }: { brainSceneState?: BrainSceneState | null 
   );
 }
 
-function Close() {
+function Close({ onClick }: { onClick?: () => void }) {
   return (
-    <div className="absolute h-[68px] left-[1057px] top-[28px] w-[67px]" data-name="close">
+    <div className="absolute h-[68px] left-[1057px] top-[28px] w-[67px] cursor-pointer" data-name="close" onClick={onClick}>
       <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 67 68">
         <g id="close">
           <rect fill="var(--fill-0, white)" height="66" rx="32.5" width="65" x="1" y="1" />
@@ -498,7 +498,7 @@ function Close() {
   );
 }
 
-function Frame7({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
+function Frame7({ brainSceneState, onClose }: { brainSceneState?: BrainSceneState | null; onClose?: () => void }) {
   return (
     <div className="relative bg-[#d9d9d9] h-[691px] rounded-[12px] w-[1149px] overflow-visible">
       <div className="absolute flex h-[575.281px] items-center justify-center left-[30.25px] top-[47.95px] w-[577.136px] overflow-visible" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "100" } as React.CSSProperties}>
@@ -508,12 +508,12 @@ function Frame7({ brainSceneState }: { brainSceneState?: BrainSceneState | null 
       </div>
       <Flatten />
       <Frame6 brainSceneState={brainSceneState} />
-      <Close />
+      <Close onClick={onClose} />
     </div>
   );
 }
 
-export default function Page({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
+export default function Page({ brainSceneState, onClose }: { brainSceneState?: BrainSceneState | null; onClose?: () => void }) {
   return (
     <div className="bg-[#373737] flex items-center justify-center min-h-screen overflow-auto p-6" data-name="page2">
       <style>{`
@@ -521,7 +521,7 @@ export default function Page({ brainSceneState }: { brainSceneState?: BrainScene
         .text-type__cursor { margin-left: 2px; animation: blink 0.5s step-end infinite; color: inherit; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
       `}</style>
-      <Frame7 brainSceneState={brainSceneState} />
+      <Frame7 brainSceneState={brainSceneState} onClose={onClose} />
     </div>
   );
 }
