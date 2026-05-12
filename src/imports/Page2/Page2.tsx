@@ -1,4 +1,6 @@
 import svgPaths from "./svg-14yfvhpnzz";
+import { useState, useEffect, useMemo } from "react";
+import { motion } from "motion/react";
 import reportTitle from "../../assets/report-title.svg";
 import {
   BRAIN_TAG_META,
@@ -137,9 +139,19 @@ function Picture({ brainSceneState }: { brainSceneState?: BrainSceneState | null
 
   return (
     <div className="drop-shadow-[2px_-4px_2px_rgba(0,0,0,0.25)] h-[548.043px] relative w-[550px] overflow-visible" data-name="picture">
-      <Frame8 />
-      <div className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[268.666px] items-center justify-center left-[calc(50%+1.61px)] top-[calc(50%-26.86px)] w-[384.68px] overflow-visible" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "20" } as React.CSSProperties}>
-        <div className="flex-none rotate-[0.36deg] overflow-visible">
+      <motion.div
+        initial={{ scale: 1.4, rotate: -8, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="size-full">
+        <Frame8 />
+      </motion.div>
+      <motion.div
+        initial={{ scale: 1.4, rotate: -8, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0.36, opacity: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[268.666px] items-center justify-center left-[calc(50%+1.61px)] top-[calc(50%-26.86px)] w-[384.68px] overflow-visible" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "20" } as React.CSSProperties}>
+        <div className="flex-none overflow-visible">
           {brainSceneState ? (
             <div className="overflow-visible" style={{ width: '384px', height: `${476.377 * scale * 0.9}px` }}>
               <div style={{ transform: `translateY(90px) scale(${scale * 0.9})`, transformOrigin: 'top left' }}>
@@ -154,14 +166,18 @@ function Picture({ brainSceneState }: { brainSceneState?: BrainSceneState | null
             <BrainScene />
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 function Flatten() {
   return (
-    <div className="absolute h-[174px] left-[457px] top-[508px] w-[173px]" data-name="flatten">
+    <motion.div
+      initial={{ scale: 3, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: 1 }}
+      className="absolute h-[174px] left-[457px] top-[508px] w-[173px]" data-name="flatten">
       <div className="absolute inset-[0.57%_2.89%_3.45%_0.58%]">
         <div className="absolute inset-[-0.29%_-2.69%_-2.69%_-0.29%]">
           <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 171.979 171.979">
@@ -226,7 +242,7 @@ function Flatten() {
         <p className="leading-[13.662px] mb-0 whitespace-pre">{`brain  `}</p>
         <p className="leading-[13.662px] whitespace-pre">{`       city`}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -310,8 +326,15 @@ function TagContainer({ brainSceneState }: { brainSceneState?: BrainSceneState |
 
   return (
     <div className="content-stretch flex gap-[18.603px] items-center relative shrink-0" data-name="tag-container">
-      {topTags.map((tagKey) => (
-        <TagPill key={tagKey} tagKey={tagKey} />
+      {topTags.map((tagKey, i) => (
+        <motion.div
+          key={tagKey}
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.8 + i * 0.15 }}
+        >
+          <TagPill tagKey={tagKey} />
+        </motion.div>
       ))}
     </div>
   );
@@ -326,26 +349,76 @@ function Frame({ brainSceneState }: { brainSceneState?: BrainSceneState | null }
   );
 }
 
+function TypeWriter({
+  segments,
+  speed = 60,
+  delay = 0,
+  showCursor = true,
+}: {
+  segments: { text: string; className?: string }[];
+  speed?: number;
+  delay?: number;
+  showCursor?: boolean;
+}) {
+  const flatText = segments.map((s) => s.text).join("");
+  const [visible, setVisible] = useState(0);
+
+  useEffect(() => {
+    if (visible >= flatText.length) return;
+    const t = setTimeout(() => setVisible((v) => v + 1), visible === 0 ? delay : speed);
+    return () => clearTimeout(t);
+  }, [visible, flatText.length, speed, delay]);
+
+  let charCount = 0;
+  return (
+    <span className="text-type">
+      {segments.map((seg, i) => {
+        const start = charCount;
+        const end = Math.min(charCount + seg.text.length, visible);
+        charCount += seg.text.length;
+        const shown = seg.text.slice(0, Math.max(0, end - start));
+        if (!shown) return null;
+        return (
+          <span key={i} className={seg.className}>
+            {shown}
+          </span>
+        );
+      })}
+      {showCursor && visible < flatText.length && (
+        <span className="text-type__cursor">|</span>
+      )}
+    </span>
+  );
+}
+
 function Frame3({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
   const topTagCopy = getTopTagCopy(brainSceneState);
 
+  const p1Segments = useMemo(() => [
+    { text: '恭喜你！塑造成了', className: 'leading-[40px] text-[20px]' },
+    { text: '「', className: 'font-bold leading-[40px] text-[28px]' },
+    { text: topTagCopy?.title ?? '达人', className: 'font-bold leading-[40px] text-[28px]' },
+    { text: '」', className: 'font-bold leading-[40px] text-[28px]' },
+    { text: '，', className: 'leading-[40px] text-[20px]' },
+  ], [topTagCopy]);
+
+  const p2Segments = useMemo(() => [
+    { text: '除了', className: 'leading-[40px] text-[20px]' },
+    { text: topTagCopy?.coreAction ?? '核心行为', className: 'leading-[40px] text-[20px]' },
+    { text: '，', className: 'leading-[40px] text-[20px]' },
+    { text: topTagCopy?.extensionActivity ?? '拓展活动', className: 'leading-[40px] text-[20px] underline' },
+    { text: '，也能强化你的专属神经通路；同时，这样的你在学习同类技能活动时，会比别人更擅长、学得更快。', className: 'leading-[40px] text-[20px]' },
+  ], [topTagCopy]);
+
   return (
-    <div className="content-stretch flex flex-col gap-[40px] items-start relative shrink-0 w-[404px]">
+    <div className='content-stretch flex flex-col gap-[40px] items-start relative shrink-0 w-[404px]'>
       <Frame brainSceneState={brainSceneState} />
-      <div className="font-normal leading-[0] not-italic relative shrink-0 text-[#252525] text-[0px] w-full">
-        <p className="mb-0">
-          <span className="leading-[40px] text-[20px]">恭喜你！塑造成了</span>
-          <span className="font-bold leading-[40px] not-italic text-[28px]">“</span>
-          <span className="font-bold font-bold leading-[40px] not-italic text-[28px]">{topTagCopy?.title ?? "达人"}</span>
-          <span className="font-bold leading-[40px] not-italic text-[28px]">”</span>
-          <span className="leading-[40px] text-[20px]">，</span>
+      <div className='font-normal not-italic relative shrink-0 text-[#252525] w-full'>
+        <p className='mb-0'>
+          <TypeWriter segments={p1Segments} speed={60} delay={1500} />
         </p>
-        <p className="text-[20px]">
-          <span className="leading-[40px]">除了</span>
-          <span className="leading-[40px]">{topTagCopy?.coreAction ?? "核心行为"}</span>
-          <span className="leading-[40px]">，</span>
-          <span className="[text-decoration-skip-ink:none] decoration-solid leading-[40px] underline">{topTagCopy?.extensionActivity ?? "拓展活动"}</span>
-          <span className="leading-[40px]">，也能强化你的专属神经通路；同时，这样的你在学习同类技能活动时，会比别人更擅长、学得更快。</span>
+        <p className='text-[20px]'>
+          <TypeWriter segments={p2Segments} speed={60} delay={2200} />
         </p>
       </div>
     </div>
@@ -376,30 +449,38 @@ function Frame5({ brainSceneState }: { brainSceneState?: BrainSceneState | null 
 
 function Frame1() {
   return (
-    <div className="bg-white relative w-full">
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut", delay: 7.5}}
+      className="bg-white relative w-full">
       <div aria-hidden="true" className="absolute border border-black border-solid inset-[-0.5px] pointer-events-none" />
       <div className="flex flex-row items-center justify-center size-full">
         <div className="content-stretch flex items-center justify-center p-[12px] relative size-full">
           <p className="font-normal leading-[0] not-italic relative shrink-0 text-[#252525] text-[16px] w-[424px]">
-            <span className="leading-[24px]">结语: 每一次按键都是对大脑的'锻炼', 持续锻炼就能让通路越来越'强壮' —— </span>
-            <span className="font-bold leading-[24px]">大脑的可塑性, 就藏在你的每一次努力里。</span>
+            <span className="leading-[24px]">结语: 每一次活动都是对大脑的'锻炼和塑造',  持之以恒让神经通路愈发'强壮' —— </span>
+            <span className="font-bold leading-[24px]">神经可塑性, 就藏在你的每一次努力里。</span>
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function Frame6({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
   return (
-    <div className="absolute content-stretch flex flex-col gap-[18px] items-start left-[645px] top-[77px] w-[444.503px]">
+    <motion.div
+      initial={{ opacity: 0, x: 60 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+      className="absolute content-stretch flex flex-col gap-[18px] items-start left-[645px] top-[77px] w-[444.503px]">
       <Frame5 brainSceneState={brainSceneState} />
       <div className="flex h-[76.301px] items-center justify-center relative shrink-0 w-full" style={{ "--transform-inner-width": "1200", "--transform-inner-height": "20" } as React.CSSProperties}>
         <div className="flex-none rotate-[-0.17deg] w-full">
           <Frame1 />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -435,6 +516,11 @@ function Frame7({ brainSceneState }: { brainSceneState?: BrainSceneState | null 
 export default function Page({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
   return (
     <div className="bg-[#373737] flex items-center justify-center min-h-screen overflow-auto p-6" data-name="page2">
+      <style>{`
+        .text-type { white-space: pre-wrap; }
+        .text-type__cursor { margin-left: 2px; animation: blink 0.5s step-end infinite; color: inherit; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+      `}</style>
       <Frame7 brainSceneState={brainSceneState} />
     </div>
   );
