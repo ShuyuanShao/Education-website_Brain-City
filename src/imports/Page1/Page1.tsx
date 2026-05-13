@@ -48,13 +48,11 @@ export function getTopTagsFromPathWidths(pathWidths: Record<string, number>, lim
   return BRAIN_TAG_PRIORITY
     .map((tagKey) => {
       const widths = BRAIN_TAG_PATH_GROUPS[tagKey].map((pathId) => pathWidths[pathId] ?? INITIAL_PATH_WIDTH);
-      const totalWidth = widths.reduce((sum, width) => sum + width, 0);
       const maxWidth = widths.reduce((max, width) => Math.max(max, width), INITIAL_PATH_WIDTH);
 
-      return { tagKey, totalWidth, maxWidth };
+      return { tagKey, maxWidth };
     })
     .sort((a, b) => {
-      if (b.totalWidth !== a.totalWidth) return b.totalWidth - a.totalWidth;
       if (b.maxWidth !== a.maxWidth) return b.maxWidth - a.maxWidth;
       return BRAIN_TAG_PRIORITY.indexOf(a.tagKey) - BRAIN_TAG_PRIORITY.indexOf(b.tagKey);
     })
