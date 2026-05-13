@@ -557,10 +557,11 @@ function Toolbar({ onTimerEnd, onStop, onClose, paused }: { onTimerEnd: () => vo
 
 function PromptAction({ onPromptClick, mode = "tool" }: { onPromptClick: () => void; mode?: string }) {
   const src = mode === "tool" ? promptActionToolMode : promptActionCursorMode;
+  const handleClick = mode === "tool" ? undefined : onPromptClick;
   return (
     <button
-      onClick={onPromptClick}
-      className="-translate-y-1/2 absolute content-stretch flex h-[242px] items-center justify-center left-[80px] rounded-[12px] top-[calc(50%+299px)] w-[328px] cursor-pointer"
+      onClick={handleClick}
+      className={`-translate-y-1/2 absolute content-stretch flex h-[242px] items-center justify-center left-[80px] rounded-[12px] top-[calc(50%+299px)] w-[328px] ${mode === "tool" ? "cursor-default" : "cursor-pointer"}`}
       data-name="prompt-action"
     >
       <img alt="教具提示" className="block max-w-none size-full" src={src} />
@@ -890,7 +891,7 @@ function PalyPuzzle({ isActive }: { isActive: boolean }) {
 
 interface ActionButtonProps {
   isActive: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
   dataName: string;
 }
@@ -899,7 +900,7 @@ function ActionButton({ isActive, onClick, children, dataName }: ActionButtonPro
   if (isActive) {
     return (
       <motion.button layout transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="bg-[#d5fc74] content-stretch drop-shadow-[0px_4px_0px_black] flex items-center justify-center p-[9px] relative rounded-[12px] shrink-0 size-[128px] cursor-pointer"
+        className={`bg-[#d5fc74] content-stretch drop-shadow-[0px_4px_0px_black] flex items-center justify-center p-[9px] relative rounded-[12px] shrink-0 size-[128px] ${onClick ? "cursor-pointer" : "cursor-default"}`}
         data-name={dataName}
         onClick={onClick}
       >
@@ -913,7 +914,7 @@ function ActionButton({ isActive, onClick, children, dataName }: ActionButtonPro
 
   return (
     <motion.button layout transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      className="bg-[#E2E2E2] content-stretch flex items-center justify-center p-[5.906px] relative rounded-[7.875px] shrink-0 size-[84px] cursor-pointer hover:bg-[#d0d0d0]"
+      className={`bg-[#E2E2E2] content-stretch flex items-center justify-center p-[5.906px] relative rounded-[7.875px] shrink-0 size-[84px] ${onClick ? "cursor-pointer hover:bg-[#d0d0d0]" : "cursor-default"}`}
       data-name={dataName}
       onClick={onClick}
     >
@@ -924,40 +925,42 @@ function ActionButton({ isActive, onClick, children, dataName }: ActionButtonPro
   );
 }
 
-function Container({ selectedAction, onActionClick }: { selectedAction: string; onActionClick: (action: string) => void }) {
+function Container({ selectedAction, onActionClick, mode }: { selectedAction: string; onActionClick: (action: string) => void; mode?: string }) {
+  const isToolMode = mode === "tool";
+  const handleClick = (action: string) => isToolMode ? undefined : () => onActionClick(action);
   return (
     <div className="content-stretch flex gap-[16px] items-start relative shrink-0 w-full" data-name="container">
       <ActionButton
         isActive={selectedAction === "basketball"}
-        onClick={() => onActionClick("basketball")}
+        onClick={handleClick("basketball")}
         dataName="icon-basketball"
       >
         <PlayBasketball isActive={selectedAction === "basketball"} />
       </ActionButton>
       <ActionButton
         isActive={selectedAction === "piano"}
-        onClick={() => onActionClick("piano")}
+        onClick={handleClick("piano")}
         dataName="icon-piano"
       >
         <PlayPiano isActive={selectedAction === "piano"} />
       </ActionButton>
       <ActionButton
         isActive={selectedAction === "drawing"}
-        onClick={() => onActionClick("drawing")}
+        onClick={handleClick("drawing")}
         dataName="icon-draw"
       >
         <Drawing isActive={selectedAction === "drawing"} />
       </ActionButton>
       <ActionButton
         isActive={selectedAction === "speech"}
-        onClick={() => onActionClick("speech")}
+        onClick={handleClick("speech")}
         dataName="icon-speech"
       >
         <Speeching isActive={selectedAction === "speech"} />
       </ActionButton>
       <ActionButton
         isActive={selectedAction === "puzzle"}
-        onClick={() => onActionClick("puzzle")}
+        onClick={handleClick("puzzle")}
         dataName="icon-puzzle"
       >
         <PalyPuzzle isActive={selectedAction === "puzzle"} />
@@ -966,10 +969,10 @@ function Container({ selectedAction, onActionClick }: { selectedAction: string; 
   );
 }
 
-function MenuAction({ selectedAction, onActionClick }: { selectedAction: string; onActionClick: (action: string) => void }) {
+function MenuAction({ selectedAction, onActionClick, mode }: { selectedAction: string; onActionClick: (action: string) => void; mode?: string }) {
   return (
     <div className="-translate-y-1/2 absolute bg-[#252525] content-stretch flex flex-col h-[109px] items-start left-[80px] pt-[12px] px-[40px] rounded-[99px] top-[calc(50%-365.5px)] w-[608px]" data-name="menu-action">
-      <Container selectedAction={selectedAction} onActionClick={onActionClick} />
+      <Container selectedAction={selectedAction} onActionClick={onActionClick} mode={mode} />
     </div>
   );
 }
@@ -1153,6 +1156,33 @@ export default function Unit({ onComplete, mode = "tool", onClose }: { onComplet
     }, 200);
   };
 
+  // 键盘快捷键监听（教具模式）
+  const handlePromptClickRef = useRef(handlePromptClick);
+  handlePromptClickRef.current = handlePromptClick;
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (mode !== "tool") return;
+      const key = e.key.toLowerCase();
+      if (key === "a") {
+        setSelectedAction("basketball");
+      } else if (key === "b") {
+        setSelectedAction("piano");
+      } else if (key === "c") {
+        setSelectedAction("drawing");
+      } else if (key === "d") {
+        setSelectedAction("speech");
+      } else if (key === "e") {
+        setSelectedAction("puzzle");
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        handlePromptClickRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mode]);
+
   // 衰退效果：所有 path 以每秒 -0.2 stroke weight 的速度变窄
   useEffect(() => {
     const decayInterval = setInterval(() => {
@@ -1272,7 +1302,7 @@ export default function Unit({ onComplete, mode = "tool", onClose }: { onComplet
       <Toolbar onTimerEnd={handleTimerEnd} paused={paused} onStop={() => setPaused(p => !p)} onClose={onClose} />
       <PromptAction onPromptClick={handlePromptClick} mode={mode} />
       <Frame1 selectedAction={selectedAction} />
-      <MenuAction selectedAction={selectedAction} onActionClick={setSelectedAction} />
+      <MenuAction selectedAction={selectedAction} onActionClick={setSelectedAction} mode={mode} />
     </div>
   );
 }
