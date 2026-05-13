@@ -317,8 +317,10 @@ const TOP_TAG_COPY: Record<BrainTagKey, { title: string; coreAction: string; ext
 };
 
 function getTopTagCopy(brainSceneState?: BrainSceneState | null) {
-  const topTag = brainSceneState ? getTopTagsFromPathWidths(brainSceneState.pathWidths, 1)[0] : undefined;
-  return topTag ? TOP_TAG_COPY[topTag] : undefined;
+  const topTags = brainSceneState ? getTopTagsFromPathWidths(brainSceneState.pathWidths, 2) : [];
+  if (topTags.length === 0) return undefined;
+  const pick = topTags[Math.floor(Math.random() * topTags.length)];
+  return TOP_TAG_COPY[pick];
 }
 
 function TagContainer({ brainSceneState }: { brainSceneState?: BrainSceneState | null }) {
